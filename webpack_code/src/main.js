@@ -8,6 +8,13 @@ import './sass/test1.sass';
 import './sass/test2.scss';
 import './stylus/index.styl';
 
-var result = count(2, 1);
+let result = count(2, 1);
 console.log(result);
-console.log(sum(1, 2, 3, 4));
+// console.log(result);
+console.log(sum(1, 2, 3, 4, 5));
+
+if (module.hot) {
+  // 判断是否支持热模块替换功能
+  module.hot.accept('./js/count');
+  module.hot.accept('./js/sum');
+}

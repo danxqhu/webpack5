@@ -161,7 +161,15 @@ export const data = {
       ]
     }
   ],
-  "git": {},
+  "git": {
+    "contributors": [
+      {
+        "name": "xinqiang-hu",
+        "email": "danxqhu@gmail.com",
+        "commits": 1
+      }
+    ]
+  },
   "filePathRelative": "base/css.md"
 }
 

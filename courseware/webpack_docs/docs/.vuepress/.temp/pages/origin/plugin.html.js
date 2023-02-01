@@ -112,7 +112,15 @@ export const data = {
       "children": []
     }
   ],
-  "git": {},
+  "git": {
+    "contributors": [
+      {
+        "name": "xinqiang-hu",
+        "email": "danxqhu@gmail.com",
+        "commits": 1
+      }
+    ]
+  },
   "filePathRelative": "origin/plugin.md"
 }
 
