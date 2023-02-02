@@ -1,3 +1,8 @@
+// nodejs核心模块，直接使用
+const os = require('os');
+// cpu核数
+const threads = os.cpus().length;
+
 const path = require('path'); //nodejs核心模块，专门用来处理路径问题
 const ESLintPlugin = require('eslint-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
@@ -82,12 +87,25 @@ module.exports = {
           },
           {
             test: /\.js$/,
-            exclude: /(node_modules|bower_components)/, //排除node_modules中的js文件
-            loader: 'babel-loader',
+            // exclude: /(node_modules|bower_components)/, //排除node_modules中的js文件
+            include: path.resolve(__dirname, '../src'), //只处理src下的文件，其他文件不处理
+            use: [
+              {
+                loader: 'thread-loader', //开启多进程
+                options: {
+                  works: threads, //进程数量
+                },
+              },
+              {
+                loader: 'babel-loader',
 
-            // options: {
-            //   presets: ['@babel/preset-env'],
-            // },
+                options: {
+                  //   presets: ['@babel/preset-env'],
+                  cacheDirectory: true, //开启babel缓存
+                  cacheCompression: false, //关闭缓存文件压缩
+                },
+              },
+            ],
           },
         ],
       },
@@ -99,6 +117,10 @@ module.exports = {
     new ESLintPlugin({
       // 检测哪些文件
       context: path.resolve(__dirname, '../src'),
+      exclude: 'node_modules', //默认值
+      cache: true, //开启缓存
+      cacheLocation: path.resolve(__dirname, '../node_modules/.cache/eslintcache'),
+      threads, //开启多进程和设置进程数量
     }),
     new HtmlWebpackPlugin({
       // 模板：以public/index.html文件创建的html文件

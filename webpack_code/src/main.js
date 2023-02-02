@@ -1,5 +1,7 @@
 import count from './js/count';
 import sum from './js/sum';
+
+import { mul } from './js/math';
 // 想要webpack打包资源，必须引入该资源
 import './css/iconfont.css';
 import './css/index.css';
@@ -8,6 +10,7 @@ import './sass/test1.sass';
 import './sass/test2.scss';
 import './stylus/index.styl';
 
+console.log(mul(3, 3));
 let result = count(2, 1);
 console.log(result);
 // console.log(result);
