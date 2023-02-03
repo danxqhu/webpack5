@@ -9,6 +9,8 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const TerserWebpackPlugin = require('terser-webpack-plugin');
+const PreloadWebpackPlugin = require('@vue/preload-webpack-plugin');
+const WorkboxPlugin = require('workbox-webpack-plugin');
 
 function getStyleLoader(pre) {
   return [
@@ -38,7 +40,11 @@ module.exports = {
     // __dirname nodejs的变量，代表当前文件的文件夹目录
     path: path.resolve(__dirname, '../dist'), //绝对路径
     // 入口文件打包输出文件名
-    filename: 'static/js/main.js',
+    filename: 'static/js/[name].[contenthash:8].js',
+    // 给打包输出的其他文件命名
+    chunkFilename: 'static/js/[name].[contenthash:8].chunk.js',
+    // 图片、字体等通过type:asset处理资源命名方式
+    assetModuleFilename: 'static/media/[name].[hash][ext][query]',
     // 自动清空上次打包的内容
     clean: true,
   },
@@ -75,19 +81,19 @@ module.exports = {
                 maxSize: 10 * 1024, //10kb
               },
             },
-            generator: {
-              // 输出图片名称
-              // [hash:10] 哈希值取前10位
-              filename: 'static/images/[hash:10][ext][query]',
-            },
+            // generator: {
+            //   // 输出图片名称
+            //   // [hash:10] 哈希值取前10位
+            //   filename: 'static/images/[hash:10][ext][query]',
+            // },
           },
           {
             test: /\.(ttf|woff2?|mp3|mp4|avi)$/,
             type: 'asset/resource',
-            generator: {
-              // 输出图片名称
-              filename: 'static/media/[hash:10][ext][query]',
-            },
+            // generator: {
+            //   // 输出图片名称
+            //   filename: 'static/media/[hash:10][ext][query]',
+            // },
           },
           {
             test: /\.js$/,
@@ -123,7 +129,10 @@ module.exports = {
       context: path.resolve(__dirname, '../src'),
       exclude: 'node_modules', //默认值
       cache: true, //开启缓存
-      cacheLocation: path.resolve(__dirname, '../node_modules/.cache/eslintcache'),
+      cacheLocation: path.resolve(
+        __dirname,
+        '../node_modules/.cache/eslintcache'
+      ),
       threads, //开启多进程和设置进程数量
     }),
     new HtmlWebpackPlugin({
@@ -132,12 +141,24 @@ module.exports = {
       template: path.resolve(__dirname, '../src/public/index.html'),
     }),
     new MiniCssExtractPlugin({
-      filename: 'static/css/main.css',
+      filename: 'static/css/[name].[contenthash:10].css',
+      chunkFilename: 'static/css/[name].[contenthash:10].chunk.css',
     }),
     // new CssMinimizerPlugin(),
     // new TerserWebpackPlugin({
     //   parallel: threads, //开启多进程和设置进程数量
     // }),
+    new PreloadWebpackPlugin({
+      // rel: 'preload',
+      // as: 'script',
+      rel: 'prefetch',
+    }),
+    new WorkboxPlugin.GenerateSW({
+      // 这些选项帮助快速启用 ServiceWorkers
+      // 不允许遗留任何“旧的” ServiceWorkers
+      clientsClaim: true,
+      skipWaiting: true,
+    }),
   ],
 
   optimization: {
@@ -150,6 +171,14 @@ module.exports = {
         parallel: threads, //开启多进程和设置进程数量
       }),
     ],
+    // 代码分割配置
+    splitChunks: {
+      chunks: 'all',
+      // 其他都用默认值
+    },
+    runtimeChunk: {
+      name: (entrypoint) => `runtime~${entrypoint.name}`,
+    },
   },
 
   // 模式
