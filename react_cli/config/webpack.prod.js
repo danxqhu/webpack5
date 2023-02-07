@@ -1,15 +1,21 @@
 const path = require("path");
 const EslintWebpackPlugin = require("eslint-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-const ReactRefreshWebpackPlugin = require("@pmmmwh/react-refresh-webpack-plugin");
+// const ReactRefreshWebpackPlugin = require("@pmmmwh/react-refresh-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const CssMinimizerWebpackPlugin = require("css-minimizer-webpack-plugin");
+const TerserWebpackPlugin = require("terser-webpack-plugin");
+const ImageMinimizerWebpackPlugin = require("image-minimizer-webpack-plugin");
+const CopyPlugin = require("copy-webpack-plugin");
 
 module.exports = {
   entry: "./src/main.js",
   output: {
-    path: undefined,
-    filename: "static/js/[name].js",
-    chunkFilename: "static/js/[name].chunk.js",
+    path: path.resolve(__dirname, "../dist"),
+    filename: "static/js/[name].[contenthash:10].js",
+    chunkFilename: "static/js/[name].[contenthash:10].chunk.js",
     assetModuleFilename: "static/media/[hash:10][ext][query]",
+    clean: true,
   },
   module: {
     rules: [
@@ -17,7 +23,7 @@ module.exports = {
       {
         test: /\.css$/,
         use: [
-          "style-loader",
+          MiniCssExtractPlugin.loader,
           "css-loader",
           {
             // 处理css兼容性问题
@@ -34,7 +40,7 @@ module.exports = {
       {
         test: /\.less$/,
         use: [
-          "style-loader",
+          MiniCssExtractPlugin.loader,
           "css-loader",
           {
             // 处理css兼容性问题
@@ -52,7 +58,7 @@ module.exports = {
       {
         test: /\.s[ac]ss$/,
         use: [
-          "style-loader",
+          MiniCssExtractPlugin.loader,
           "css-loader",
           {
             // 处理css兼容性问题
@@ -70,7 +76,7 @@ module.exports = {
       {
         test: /\.styl$/,
         use: [
-          "style-loader",
+          MiniCssExtractPlugin.loader,
           "css-loader",
           {
             // 处理css兼容性问题
@@ -108,7 +114,7 @@ module.exports = {
         options: {
           cacheDirectory: true,
           cacheCompression: false,
-          plugins: ["react-refresh/babel"], //激活js的HMR
+          // plugins: ["react-refresh/babel"], //激活js的HMR
         },
       },
     ],
@@ -127,9 +133,25 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, "../public/index.html"),
     }),
-    new ReactRefreshWebpackPlugin(), //激活js的HMR
+    // new ReactRefreshWebpackPlugin(), //激活js的HMR
+    new MiniCssExtractPlugin({
+      filename: "static/css/[name].[contenthash:10].css",
+      chunkFilename: "static/css/[name].[contenthash:10].chunk.css",
+    }),
+    new CopyPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, "../public"),
+          to: path.resolve(__dirname, "../dist"),
+          globOptions: {
+            // 忽略index.html文件
+            ignore: ["**/index.html*"],
+          },
+        },
+      ],
+    }),
   ],
-  mode: "development",
+  mode: "production",
   devtool: "cheap-module-source-map",
   optimization: {
     splitChunks: {
@@ -138,17 +160,41 @@ module.exports = {
     runtimeChunk: {
       name: (entrypoint) => `runtime~${entrypoint.name}`,
     },
+    minimizer: [
+      new CssMinimizerWebpackPlugin(),
+      new TerserWebpackPlugin(),
+      new ImageMinimizerWebpackPlugin({
+        minimizer: {
+          implementation: ImageMinimizerWebpackPlugin.imageminGenerate,
+          options: {
+            plugins: [
+              ["gifsicle", { interlaced: true }],
+              ["jpegtran", { progressive: true }],
+              ["optipng", { optimizationLevel: 5 }],
+              [
+                "svgo",
+                {
+                  plugins: [
+                    "preset-default",
+                    "prefixIds",
+                    {
+                      name: "sortAttrs",
+                      params: {
+                        xmlnsOrder: "alphabetical",
+                      },
+                    },
+                  ],
+                },
+              ],
+            ],
+          },
+        },
+      }),
+    ],
   },
   // webpack解析模块加载选项
   resolve: {
     // 自动补全文件扩展名
     extensions: [".jsx", ".js", ".json"],
-  },
-  devServer: {
-    host: "localhost",
-    port: "3000",
-    open: true,
-    hot: true,
-    historyApiFallback: true, //解决路由刷新出现404问题
   },
 };
