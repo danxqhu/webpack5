@@ -1,5 +1,6 @@
 import React, { Suspense, lazy } from "react";
 import { Link, Routes, Route } from "react-router-dom";
+import { Button } from "antd";
 // import Home from "./page/Home";
 // import About from "./page/About";
 
@@ -13,7 +14,7 @@ function App() {
   return (
     <div>
       <h1>App</h1>
-
+      <Button type="primary">按钮</Button>
       <ul>
         <li>
           <Link to="/home">Home</Link>
