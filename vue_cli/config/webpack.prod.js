@@ -6,6 +6,8 @@ const CssMinimizerWebpackPlugin = require('css-minimizer-webpack-plugin');
 const TerserWebpackPlugin = require('terser-webpack-plugin');
 const ImageMinimizerWebpackPlugin = require('image-minimizer-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
+const { VueLoaderPlugin } = require('vue-loader');
+const { DefinePlugin } = require('webpack');
 
 module.exports = {
   entry: './src/main.js',
@@ -150,6 +152,14 @@ module.exports = {
         },
       ],
     }),
+    // 请确保引入这个插件！
+    new VueLoaderPlugin(),
+    // cross-env定义的环境变量给打包工具使用
+    // DefinePlugin定义的环境变量给源代码使用，从而解决vue3页面警告的问题
+    new DefinePlugin({
+      __VUE_OPTIONS_API__: true,
+      __VUE_PROD_DEVTOOLS__: false,
+    }),
   ],
   mode: 'production',
   devtool: 'cheap-module-source-map',
@@ -195,6 +205,6 @@ module.exports = {
   // webpack解析模块加载选项
   resolve: {
     // 自动补全文件扩展名
-    extensions: ['.jsx', '.js', '.json'],
+    extensions: ['.vue', '.js', '.json'],
   },
 };

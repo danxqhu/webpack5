@@ -1,28 +1,26 @@
-const path = require("path");
-const EslintWebpackPlugin = require("eslint-webpack-plugin");
-const HtmlWebpackPlugin = require("html-webpack-plugin");
-// const ReactRefreshWebpackPlugin = require("@pmmmwh/react-refresh-webpack-plugin");
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const CssMinimizerWebpackPlugin = require("css-minimizer-webpack-plugin");
-const TerserWebpackPlugin = require("terser-webpack-plugin");
-const ImageMinimizerWebpackPlugin = require("image-minimizer-webpack-plugin");
-const CopyPlugin = require("copy-webpack-plugin");
-const ReactRefreshWebpackPlugin = require("@pmmmwh/react-refresh-webpack-plugin");
+const path = require('path');
+const EslintWebpackPlugin = require('eslint-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const CssMinimizerWebpackPlugin = require('css-minimizer-webpack-plugin');
+const TerserWebpackPlugin = require('terser-webpack-plugin');
+const ImageMinimizerWebpackPlugin = require('image-minimizer-webpack-plugin');
+const CopyPlugin = require('copy-webpack-plugin');
+const { VueLoaderPlugin } = require('vue-loader');
+const { DefinePlugin } = require('webpack');
+const AutoImport = require('unplugin-auto-import/webpack');
+const Components = require('unplugin-vue-components/webpack');
+const { ElementPlusResolver } = require('unplugin-vue-components/resolvers');
 
-// 获取cross-env定义的环境变量
-const isProduction = process.env.NODE_ENV === "production";
+const isProduction = process.env.NODE_ENV === 'production';
 
 module.exports = {
-  entry: "./src/main.js",
+  entry: './src/main.js',
   output: {
-    path: isProduction ? path.resolve(__dirname, "../dist") : undefined,
-    filename: isProduction
-      ? "static/js/[name].[contenthash:10].js"
-      : "static/js/[name].js",
-    chunkFilename: isProduction
-      ? "static/js/[name].[contenthash:10].chunk.js"
-      : "static/js/[name].chunk.js",
-    assetModuleFilename: "static/media/[hash:10][ext][query]",
+    path: isProduction ? path.resolve(__dirname, '../dist') : undefined,
+    filename: isProduction ? 'static/js/[name].[contenthash:10].js' : 'static/js/[name].js',
+    chunkFilename: isProduction ? 'static/js/[name].[contenthash:10].chunk.js' : 'static/js/[name].chunk.js',
+    assetModuleFilename: 'static/media/[hash:10][ext][query]',
     clean: true,
   },
   module: {
@@ -31,15 +29,15 @@ module.exports = {
       {
         test: /\.css$/,
         use: [
-          isProduction ? MiniCssExtractPlugin.loader : "style-loader",
-          "css-loader",
+          isProduction ? MiniCssExtractPlugin.loader : 'vue-style-loader',
+          'css-loader',
           {
             // 处理css兼容性问题
             // 配合package.json中browserslist来指定兼容性
-            loader: "postcss-loader",
+            loader: 'postcss-loader',
             options: {
               postcssOptions: {
-                plugins: ["postcss-preset-env"],
+                plugins: ['postcss-preset-env'],
               },
             },
           },
@@ -48,61 +46,61 @@ module.exports = {
       {
         test: /\.less$/,
         use: [
-          isProduction ? MiniCssExtractPlugin.loader : "style-loader",
-          "css-loader",
+          isProduction ? MiniCssExtractPlugin.loader : 'vue-style-loader',
+          'css-loader',
           {
             // 处理css兼容性问题
             // 配合package.json中browserslist来指定兼容性
-            loader: "postcss-loader",
+            loader: 'postcss-loader',
             options: {
               postcssOptions: {
-                plugins: ["postcss-preset-env"],
+                plugins: ['postcss-preset-env'],
               },
             },
           },
-          "less-loader",
+          'less-loader',
         ],
       },
       {
         test: /\.s[ac]ss$/,
         use: [
-          isProduction ? MiniCssExtractPlugin.loader : "style-loader",
-          "css-loader",
+          isProduction ? MiniCssExtractPlugin.loader : 'vue-style-loader',
+          'css-loader',
           {
             // 处理css兼容性问题
             // 配合package.json中browserslist来指定兼容性
-            loader: "postcss-loader",
+            loader: 'postcss-loader',
             options: {
               postcssOptions: {
-                plugins: ["postcss-preset-env"],
+                plugins: ['postcss-preset-env'],
               },
             },
           },
-          "sass-loader",
+          'sass-loader',
         ],
       },
       {
         test: /\.styl$/,
         use: [
-          isProduction ? MiniCssExtractPlugin.loader : "style-loader",
-          "css-loader",
+          isProduction ? MiniCssExtractPlugin.loader : 'vue-style-loader',
+          'css-loader',
           {
             // 处理css兼容性问题
             // 配合package.json中browserslist来指定兼容性
-            loader: "postcss-loader",
+            loader: 'postcss-loader',
             options: {
               postcssOptions: {
-                plugins: ["postcss-preset-env"],
+                plugins: ['postcss-preset-env'],
               },
             },
           },
-          "stylus-loader",
+          'stylus-loader',
         ],
       },
       // 处理图片
       {
         test: /\.(jpe?g|png|gif|webp|svg)/,
-        type: "asset",
+        type: 'asset',
         parser: {
           dataUrlCondition: {
             maxSize: 10 * 1024,
@@ -112,86 +110,79 @@ module.exports = {
       // 处理其他资源
       {
         test: /\.(woff2?|ttf)/,
-        type: "asset/resource",
+        type: 'asset/resource',
       },
       // 处理js
       {
-        test: /\.jsx?$/,
-        include: path.resolve(__dirname, "../src"),
-        loader: "babel-loader",
+        test: /\.js$/,
+        include: path.resolve(__dirname, '../src'),
+        loader: 'babel-loader',
         options: {
           cacheDirectory: true,
           cacheCompression: false,
-          plugins: [!isProduction && "react-refresh/babel"].filter(Boolean), //激活js的HMR
+          // plugins: ["react-refresh/babel"], //激活js的HMR
         },
+      },
+      {
+        test: /\.vue$/,
+        loader: 'vue-loader',
       },
     ],
   },
   // 处理html
   plugins: [
     new EslintWebpackPlugin({
-      context: path.resolve(__dirname, "../src"),
-      exclude: "node_modules",
+      context: path.resolve(__dirname, '../src'),
+      exclude: 'node_modules',
       cache: true,
-      cacheLocation: path.resolve(
-        __dirname,
-        "../node_modules/.cache/.eslintcache"
-      ),
+      cacheLocation: path.resolve(__dirname, '../node_modules/.cache/.eslintcache'),
     }),
     new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, "../public/index.html"),
+      template: path.resolve(__dirname, '../public/index.html'),
     }),
     // new ReactRefreshWebpackPlugin(), //激活js的HMR
     isProduction &&
       new MiniCssExtractPlugin({
-        filename: "static/css/[name].[contenthash:10].css",
-        chunkFilename: "static/css/[name].[contenthash:10].chunk.css",
+        filename: 'static/css/[name].[contenthash:10].css',
+        chunkFilename: 'static/css/[name].[contenthash:10].chunk.css',
       }),
     isProduction &&
       new CopyPlugin({
         patterns: [
           {
-            from: path.resolve(__dirname, "../public"),
-            to: path.resolve(__dirname, "../dist"),
+            from: path.resolve(__dirname, '../public'),
+            to: path.resolve(__dirname, '../dist'),
             globOptions: {
               // 忽略index.html文件
-              ignore: ["**/index.html*"],
+              ignore: ['**/index.html*'],
             },
           },
         ],
       }),
-    !isProduction && new ReactRefreshWebpackPlugin(),
+    // 请确保引入这个插件！
+    new VueLoaderPlugin(),
+    // cross-env定义的环境变量给打包工具使用
+    // DefinePlugin定义的环境变量给源代码使用，从而解决vue3页面警告的问题
+    new DefinePlugin({
+      __VUE_OPTIONS_API__: true,
+      __VUE_PROD_DEVTOOLS__: false,
+    }),
+    AutoImport({
+      resolvers: [ElementPlusResolver()],
+    }),
+    Components({
+      resolvers: [ElementPlusResolver()],
+    }),
   ].filter(Boolean),
-  mode: isProduction ? "production" : "development",
-  devtool: isProduction ? "cheap-module-source-map" : "cheap-module-source-map",
+  mode: isProduction ? 'production' : 'development',
+  devtool: isProduction ? 'source-map' : 'cheap-module-source-map',
   optimization: {
     splitChunks: {
-      chunks: "all",
-      cacheGroups: {
-        // react react-dom react-router-dom 一起打包成一个文件
-        react: {
-          test: /[\\/]node_modules[\\/]react(.*)?[\\/]/,
-          name: "chunk-react",
-          priority: 40, //权重高一些
-        },
-        // antd单独打包
-        antd: {
-          test: /[\\/]node_modules[\\/]antd(.*)?[\\/]/,
-          name: "chunk-antd",
-          priority: 30, //权重稍低一些
-        },
-        // 剩下node_modules单独打包
-        libs: {
-          test: /[\\/]node_modules[\\/]/,
-          name: "chunk-libs",
-          priority: 20, //权重最低
-        },
-      },
+      chunks: 'all',
     },
     runtimeChunk: {
-      name: (entrypoint) => `runtime~${entrypoint.name}`,
+      name: entrypoint => `runtime~${entrypoint.name}`,
     },
-    // 是否需要进行压缩
     minimize: isProduction,
     minimizer: [
       new CssMinimizerWebpackPlugin(),
@@ -201,19 +192,19 @@ module.exports = {
           implementation: ImageMinimizerWebpackPlugin.imageminGenerate,
           options: {
             plugins: [
-              ["gifsicle", { interlaced: true }],
-              ["jpegtran", { progressive: true }],
-              ["optipng", { optimizationLevel: 5 }],
+              ['gifsicle', { interlaced: true }],
+              ['jpegtran', { progressive: true }],
+              ['optipng', { optimizationLevel: 5 }],
               [
-                "svgo",
+                'svgo',
                 {
                   plugins: [
-                    "preset-default",
-                    "prefixIds",
+                    'preset-default',
+                    'prefixIds',
                     {
-                      name: "sortAttrs",
+                      name: 'sortAttrs',
                       params: {
-                        xmlnsOrder: "alphabetical",
+                        xmlnsOrder: 'alphabetical',
                       },
                     },
                   ],
@@ -228,14 +219,13 @@ module.exports = {
   // webpack解析模块加载选项
   resolve: {
     // 自动补全文件扩展名
-    extensions: [".jsx", ".js", ".json"],
+    extensions: ['.vue', '.js', '.json'],
   },
   devServer: {
-    host: "localhost",
-    port: "3000",
+    host: 'localhost',
+    port: '3000',
     open: true,
     hot: true,
     historyApiFallback: true, //解决路由刷新出现404问题
   },
-  // performance: true, //性能分析，提升打包速度
 };
